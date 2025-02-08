@@ -2,6 +2,7 @@ const express = require('express');
 const redis = require('redis');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
@@ -20,26 +21,69 @@ client.connect()
   .then(() => console.log('Connected to Redis'))
   .catch(err => console.error('Redis connection error:', err));
 
+// Simple user model for demonstration
+const users = [
+  { username: 'admin', password: 'admin123', role: 'Admin' },
+  { username: 'viewer', password: 'viewer123', role: 'Viewer' }
+];
+
+// Middleware to authenticate user
+const authenticateUser = (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
+  
+  if (user) {
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not defined');
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+    const token = jwt.sign({ username: user.username, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token });
+  } else {
+    console.error('Invalid login attempt:', { username, password });
+    res.status(401).json({ message: 'Invalid credentials' });
+  }
+};
+
+// Middleware to check user roles
+const authorize = (roles = []) => {
+  return (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) return res.sendStatus(403);
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+      if (err) return res.sendStatus(403);
+      if (roles.length && !roles.includes(user.role)) return res.sendStatus(403);
+      req.user = user;
+      next();
+    });
+  };
+};
+
 // CRUD Operations
 
 // Route to save student data
-app.post('/students', async (req, res) => {
-  const { id, name, course, age, address } = req.body;
+app.post('/students', authorize(['Admin']), async (req, res) => {
+  const { id, name, course, age, address, email, phone, gender, enrollmentDate } = req.body;
 
   // Validate input fields
-  if (!id || !name || !course || !age || !address) {
+  if (!id || !name || !course || !age || !address || !email || !phone || !gender || !enrollmentDate) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
   try {
-    // Set student data in Redis (using object syntax for Redis v4 and above)
-    const studentData = { name, course, age, address };
+    // Set student data in Redis
+    const studentData = { name, course, age, address, email, phone, gender, enrollmentDate };
 
     // Save student data in Redis hash
     await client.hSet(`student:${id}`, 'name', studentData.name);
     await client.hSet(`student:${id}`, 'course', studentData.course);
     await client.hSet(`student:${id}`, 'age', studentData.age);
     await client.hSet(`student:${id}`, 'address', studentData.address);
+    await client.hSet(`student:${id}`, 'email', studentData.email);
+    await client.hSet(`student:${id}`, 'phone', studentData.phone);
+    await client.hSet(`student:${id}`, 'gender', studentData.gender);
+    await client.hSet(`student:${id}`, 'enrollmentDate', studentData.enrollmentDate);
 
     // Respond with success message
     res.status(201).json({ message: 'Student saved successfully' });
@@ -50,7 +94,7 @@ app.post('/students', async (req, res) => {
 });
 
 // Read (R)
-app.get('/students/:id', async (req, res) => {
+app.get('/students/:id', authorize(['Admin', 'Viewer']), async (req, res) => {
   const id = req.params.id;
   const student = await client.hGetAll(`student:${id}`);
   if (Object.keys(student).length === 0) {
@@ -60,7 +104,7 @@ app.get('/students/:id', async (req, res) => {
 });
 
 // Read all students
-app.get('/students', async (req, res) => {
+app.get('/students', authorize(['Admin', 'Viewer']), async (req, res) => {
   const keys = await client.keys('student:*');
   const students = await Promise.all(keys.map(async (key) => {
     return { id: key.split(':')[1], ...(await client.hGetAll(key)) };
@@ -69,11 +113,11 @@ app.get('/students', async (req, res) => {
 });
 
 // Update (U)
-app.put('/students/:id', async (req, res) => {
+app.put('/students/:id', authorize(['Admin']), async (req, res) => {
   const id = req.params.id;
-  const { name, course, age, address } = req.body;
+  const { name, course, age, address, email, phone, gender, enrollmentDate } = req.body;
 
-  if (!name && !course && !age && !address) {
+  if (!name && !course && !age && !address && !email && !phone && !gender && !enrollmentDate) {
     return res.status(400).json({ message: 'At least one field is required to update' });
   }
 
@@ -88,6 +132,10 @@ app.put('/students/:id', async (req, res) => {
     if (course) await client.hSet(`student:${id}`, 'course', course);
     if (age) await client.hSet(`student:${id}`, 'age', age);
     if (address) await client.hSet(`student:${id}`, 'address', address);
+    if (email) await client.hSet(`student:${id}`, 'email', email);
+    if (phone) await client.hSet(`student:${id}`, 'phone', phone);
+    if (gender) await client.hSet(`student:${id}`, 'gender', gender);
+    if (enrollmentDate) await client.hSet(`student:${id}`, 'enrollmentDate', enrollmentDate);
 
     res.status(200).json({ message: 'Student updated successfully' });
   } catch (error) {
@@ -97,11 +145,14 @@ app.put('/students/:id', async (req, res) => {
 });
 
 // Delete (D)
-app.delete('/students/:id', async (req, res) => {
+app.delete('/students/:id', authorize(['Admin']), async (req, res) => {
   const id = req.params.id;
   await client.del(`student:${id}`);
   res.status(200).json({ message: 'Student deleted successfully' });
 });
+
+// Login route
+app.post('/login', authenticateUser);
 
 // Start server
 app.listen(PORT, () => {

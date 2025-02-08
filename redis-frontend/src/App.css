@@ -1,38 +1,94 @@
-.App {
+body {
   text-align: center;
+  font-family: 'Roboto', sans-serif; /* Modern font */
+  padding: 20px;
+  background-color: #f4f4f4; /* Light background */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.bg-1 {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(to right, #f0f0f0 1px, transparent 1px), 
+              linear-gradient(to bottom, #f0f0f0 1px, transparent 1px);
+  background-size: 6rem 4rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.bg-2 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: radial-gradient(circle 500px at 50% 200px, #C9EBFF, transparent);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.submit-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  background-color: #007bff; /* Modern blue */
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s; /* Transition for hover effect */
+}
+
+.submit-button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+  transform: translateY(-2px); /* Lift effect */
+}
+
+form input {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  transition: border-color 0.3s; /* Transition for focus effect */
+}
+
+form input:focus {
+  border-color: #007bff; /* Change border color on focus */
+}
+
+.student-table {
+  width: 92%;
+  margin-bottom: 20px;
+  border-collapse: collapse;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add shadow */
+}
+
+.student-table tr:nth-child(even) {
+  background-color: #f9f9f9; /* Alternating row colors */
+}
+
+.student-table tr:hover {
+  background-color: #e9ecef; /* Highlight row on hover */
+}
+
+.search-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center; /* Center the search bars */
+  margin-bottom: 35px;
+}
+
+.search-bar {
+  width: 200px;
+  margin: 0 10px;
+  text-align: center;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.data-visualization-container {
+  display: flex;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.course-chart-container,
+.gender-chart-container {
+  width: 45%;
+  margin: 10px -10px; /* Reduced margin for closer spacing */
 }

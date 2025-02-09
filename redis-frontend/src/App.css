@@ -1,7 +1,6 @@
 body {
   text-align: center;
   font-family: 'Roboto', sans-serif; /* Modern font */
-  padding: 20px;
   background-color: #f4f4f4; /* Light background */
 }
 
@@ -23,6 +22,11 @@ body {
   right: 0;
   top: 0;
   background: radial-gradient(circle 500px at 50% 200px, #C9EBFF, transparent);
+}
+
+.app-title {
+  font-family: 'Knewave';
+  font-size: 3rem;
 }
 
 .submit-button {
@@ -92,3 +96,14 @@ form input:focus {
   width: 45%;
   margin: 10px -10px; /* Reduced margin for closer spacing */
 }
+
+
+/* Custom Fonts */
+
+@font-face {
+  font-family: 'Knewave';
+  src: url(./fonts/Knewave-Regular.ttf);
+  font-weight: normal;
+  font-style: normal;
+}
+

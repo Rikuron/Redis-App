@@ -149,11 +149,6 @@ function App() {
 
   return (
     <div className="container">
-      <div className="bg-1">
-        <div className="bg-2">
-        </div>
-      </div>
-      <h1 className="app-title">Student CRUD with Redis</h1>
 
       {token ? (
         <>
@@ -161,6 +156,15 @@ function App() {
             <p>Loading students...</p>
           ) : (
             <>
+              <div className="bg-1">
+                <div className="bg-2">
+                </div>
+              </div>
+              
+              <div id="title-container">
+                <h1 className="app-title">Student CRUD with Redis</h1>
+              </div>
+
               {!isEditing ? (
                 <form onSubmit={handleAddSubmit}>
                   <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required /> &nbsp;

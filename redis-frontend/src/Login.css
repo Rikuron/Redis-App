@@ -1,0 +1,133 @@
+#container {
+  margin: 0; /* Remove default margin */
+  height: 100vh; /* Full height of the viewport */
+  background-image: url('./images/login-background.jpg'); /* Adjust the path to your image */
+  background-size: cover; /* Cover the entire screen */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent repeating */
+  position: relative; /* Position for the overlay */
+  z-index: 0;
+}
+
+#container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Dim the background */
+  z-index: -1; /* Place behind the content */
+}
+
+#app-title {
+  display: flex;
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  margin-bottom: 20px; /* Space below the title */
+}
+
+#app-title img {
+  margin-right: 15px; /* Space between image and text */
+}
+
+#app-title h1 {
+  font-family: 'Knewave';
+  font-size: 3rem;
+  color: #f6f6f6;
+}
+
+.login-container {
+  background: #f8f8f8;
+  padding: 30px;
+  border-radius: 15px;
+  width: 30%;
+  height: 18rem;
+  text-align: left;
+  margin: auto;
+  z-index: 1;
+  position: relative;
+  box-shadow: 12px 10px 0px 2px #ff4d75;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 10px;
+  margin-left: 8px;
+}
+
+p {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 20px;
+  margin-left: 8px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-input {
+  width: 91%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #ffb6c1;
+  font-size: 16px;
+  color: #333;
+  outline: none;
+}
+
+#button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 9px;
+}
+
+.login-button,
+.register-button {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  width: 48%;
+  transition: background-color 0.3s, transform 0.3s; /* Transition for hover effect */
+}
+
+.login-button {
+  background: #ff4d75;
+  color: white;
+}
+
+.register-button {
+  background: white;
+  color: #ff4d75;
+  border: 2px solid #ff4d75;
+}
+
+.login-button:hover {
+  background: #e63b63;
+  transform: translateY(-2px); /* Lift effect */
+}
+
+.register-button:hover {
+  background: #ffecf1;
+  transform: translateY(-2px); /* Lift effect */
+}
+
+
+
+/* Custom Fonts */
+
+@font-face {
+  font-family: 'Knewave';
+  src: url(./fonts/Knewave-Regular.ttf);
+  font-weight: normal;
+  font-style: normal;
+}

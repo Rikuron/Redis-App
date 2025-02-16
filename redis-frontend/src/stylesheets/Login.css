@@ -1,7 +1,7 @@
 #container {
   margin: 0; /* Remove default margin */
   height: 100vh; /* Full height of the viewport */
-  background-image: url('./images/login-background.jpg'); /* Adjust the path to your image */
+  background-image: url('../images/login-background.jpg'); /* Adjust the path to your image */
   background-size: cover; /* Cover the entire screen */
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Prevent repeating */
@@ -86,6 +86,7 @@ p {
   display: flex;
   justify-content: space-between;
   margin-top: 9px;
+  gap: 1rem;
 }
 
 .login-button,
@@ -127,7 +128,7 @@ p {
 
 @font-face {
   font-family: 'Knewave';
-  src: url(./fonts/Knewave-Regular.ttf);
+  src: url(../fonts/Knewave-Regular.ttf);
   font-weight: normal;
   font-style: normal;
 }

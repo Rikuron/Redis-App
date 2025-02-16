@@ -4,7 +4,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CSVReader from 'react-csv-reader';
 import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import './App.css';
+import './stylesheets/App.css';
+import toga from './images/toga.png';
+import user_icon from './images/user-icon.png';
 import Login from './Login';
 
 const API_URL = 'http://localhost:5000/students';
@@ -13,11 +15,12 @@ function App() {
   const [formData, setFormData] = useState({ id: '', name: '', course: '', age: '', address: '', email: '', phone: '', gender: '', enrollmentDate: '' });
   const [students, setStudents] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [idSearch, setIdSearch] = useState('');
   const [nameSearch, setNameSearch] = useState('');
-  const [courseSearch, setCourseSearch] = useState('');
-  const [ageSearch, setAgeSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState(null); // State for JWT token
+  const [username, setUsername] = useState('');
+  const [role, setRole] = useState('');
 
   // Fetch all students
   const fetchStudents = async () => {
@@ -98,9 +101,8 @@ function App() {
   // Filter and sort students based on search queries
   const filteredStudents = students
     .filter(student =>
-      student.name.toLowerCase().includes(nameSearch.toLowerCase()) &&
-      student.course.toLowerCase().includes(courseSearch.toLowerCase()) &&
-      (ageSearch ? student.age === Number(ageSearch) : true)
+      student.id.toString().includes(idSearch) &&
+      student.name.toLowerCase().includes(nameSearch.toLowerCase())
     )
     .sort((a, b) => a.id - b.id); // Sort by ID in ascending order
 
@@ -120,6 +122,24 @@ function App() {
         enrollmentDate: row[7],
       }));
     setStudents(importedStudents);
+  };
+
+  const authenticateUser = async (username, password) => {
+    try {
+      const response = await axios.post('http://localhost:5000/login', { username, password });
+      setToken(response.data.token);
+      setUsername(username); // Store the username in the state
+      setRole(response.data.role);
+    } catch (error) {
+      toast.error('Invalid credentials');
+      console.error('Invalid credentials:', error);
+    }
+  };
+
+  const handleLogout = () => {
+    setToken(null);
+    setUsername('');
+    setRole('');
   };
 
   // Prepare data for the chart
@@ -148,7 +168,7 @@ function App() {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   return (
-    <div className="container">
+    <div>
 
       {token ? (
         <>
@@ -156,162 +176,175 @@ function App() {
             <p>Loading students...</p>
           ) : (
             <>
-              <div className="bg-1">
-                <div className="bg-2">
+              <div id="app-container">
+                
+                <div id="header-container">
+                  <div id="app-title-container">
+                    <img src={toga} alt="toga icon" id="toga-icon" />
+                    <p id="app-title"> Student Record System </p>
+                  </div>
+
+                  <div id="user-container">
+                    <img src={user_icon} alt="user icon" />
+                    <p id="username"> {username} </p>
+                    <button id="logout-button" onClick={handleLogout}/>
+                  </div>
+                </div>
+
+                <div id="overall-body-container">
+                  <div id="add-student-container">
+                    <p> Student Information </p>
+
+                    {!isEditing ? (
+                      <form onSubmit={handleAddSubmit}>
+                        <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required />
+                        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required /> 
+                        <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required /> 
+                        <input type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} required  /> 
+                        <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required  />
+                        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required /> 
+                        <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required /> 
+                        <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required /> 
+                        <input type="date" name="enrollmentDate" placeholder="Enrollment Date" value={formData.enrollmentDate} onChange={handleChange} required /> 
+                        <button className="submit-button" type="submit">Add Student</button>
+                      </form>
+                    ) : (
+                      <form onSubmit={handleEditSubmit}>
+                        <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required disabled /> 
+                        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required /> 
+                        <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required /> 
+                        <input type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} required /> 
+                        <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
+                        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required /> 
+                        <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required /> 
+                        <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required /> 
+                        <input type="date" name="enrollmentDate" placeholder="Enrollment Date" value={formData.enrollmentDate} onChange={handleChange} required /> 
+                        <button className="submit-button" type="submit">Update Student</button>
+                      </form>
+                    )}
+                  </div>
+
+                  <div id="main-body-container">
+                    <div id="navigator-container">
+
+                      <div id="search-container">
+                        <input 
+                          type="text"
+                          placeholder="Search by ID"
+                          value={idSearch}
+                          onChange={(e) => setIdSearch(e.target.value)}
+                          className="search-bar"
+                        />
+                        <input 
+                          type="text"
+                          placeholder="Search by Name"
+                          value={nameSearch}
+                          onChange={(e) => setNameSearch(e.target.value)}
+                          className="search-bar"
+                        />
+                      </div>
+
+                      <div id="navigator-right-side-container">
+                        <label htmlFor="csvInput" className="import-csv-button">
+                          Import Students
+                        </label>
+                        <CSVReader
+                          cssClass="csv-reader-input"
+                          onFileLoaded={handleCSVImport}
+                          inputId="csvInput"
+                          inputStyle={{ display: 'none' }} // Hide default input
+                        />
+                        <p> Total Students: <span>{students.length}</span> </p>
+                      </div>
+                    </div>
+
+                    <div id="student-data-container">
+                      <table border="1" align="center" className="student-table">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Course</th>
+                            <th>Age</th>
+                            <th>Address</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Gender</th>
+                            <th>Enrollment Date</th>
+                            {role === 'Admin' && <th>Actions</th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredStudents.sort((a, b) => a.id - b.id).map((student) => (
+                            <tr key={student.id}>
+                              <td>{student.id}</td>
+                              <td>{student.name}</td>
+                              <td>{student.course}</td>
+                              <td>{student.age}</td>
+                              <td>{student.address}</td>
+                              <td>{student.email}</td>
+                              <td>{student.phone}</td>
+                              <td>{student.gender}</td>
+                              <td>{student.enrollmentDate}</td>
+                              {role === 'Admin' && (
+                                <td>
+                                  &nbsp; <button onClick={() => handleEdit(student)}>Edit</button> &nbsp;
+                                  <button onClick={() => handleDelete(student.id)}>Delete</button> &nbsp;
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      <div className="data-visualization-container"> 
+                        <div className="course-chart-container">
+                          <h2> Course Distribution </h2>
+                          <ResponsiveContainer width="100%" height={400}>
+                            <PieChart>
+                              <Pie
+                                data={chartData}
+                                dataKey="count"
+                                nameKey="course"
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={150}
+                                fill="#8884d8"
+                                label
+                              >
+                                {chartData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        <div className="gender-chart-container">
+                          <h2> Gender Distribution </h2>
+                          <ResponsiveContainer width ="100%" height={400}>
+                            <BarChart data={addressChartData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="address" />
+                              <YAxis />
+                              <Tooltip />
+                              <Legend />
+                              <Bar dataKey="count" fill="#82ca9d" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              
-              <div id="title-container">
-                <h1 className="app-title">Student CRUD with Redis</h1>
-              </div>
-
-              {!isEditing ? (
-                <form onSubmit={handleAddSubmit}>
-                  <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required /> &nbsp;
-                  <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required /> &nbsp;
-                  <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required /> &nbsp;
-                  <input type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} required  /> &nbsp;
-                  <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required  />
-                  <br /> <br />
-                  <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required /> &nbsp;
-                  <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required /> &nbsp;
-                  <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required /> &nbsp;
-                  <input type="date" name="enrollmentDate" placeholder="Enrollment Date" value={formData.enrollmentDate} onChange={handleChange} required /> &nbsp;
-                  <br /> <br />
-                  <button className="submit-button" type="submit">Add Student</button>
-                </form>
-              ) : (
-                <form onSubmit={handleEditSubmit}>
-                  <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required disabled /> &nbsp;
-                  <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required /> &nbsp;
-                  <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required /> &nbsp;
-                  <input type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} required /> &nbsp;
-                  <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
-                  <br /> <br />
-                  <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required /> &nbsp;
-                  <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required /> &nbsp;
-                  <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required /> &nbsp;
-                  <input type="date" name="enrollmentDate" placeholder="Enrollment Date" value={formData.enrollmentDate} onChange={handleChange} required /> &nbsp;
-                  <br /> <br />
-                  <button className="submit-button" type="submit">Update Student</button>
-                </form>
-              )}
             </>
           )}
-
-          <h2>Student List</h2>
-
-          <div className="search-container">
-            <input 
-              type="text"
-              placeholder="Search by Name"
-              value={nameSearch}
-              onChange={(e) => setNameSearch(e.target.value)}
-              className="search-bar"
-            />
-            <input 
-              type="text"
-              placeholder="Search by Course"
-              value={courseSearch}
-              onChange={(e) => setCourseSearch(e.target.value)}
-              className="search-bar"
-            />
-            <input 
-              type="number"
-              placeholder="Search by Age"
-              value={ageSearch}
-              onChange={(e) => setAgeSearch(e.target.value)}
-              className="search-bar"
-            />
-          </div>
-
-          <CSVReader
-            cssClass="csv-reader-input"
-            label="Import CSV "
-            onFileLoaded={handleCSVImport}
-            inputId="csvInput"
-            inputStyle={{ color: 'red', marginBottom: '20px' }}
-          />
-
-          <table border="1" align="center" className="student-table">
-            <thead>
-              <tr>
-                <th>&nbsp; &nbsp; ID &nbsp; &nbsp;</th>
-                <th>&nbsp; Name &nbsp;</th>
-                <th>&nbsp; Course &nbsp;</th>
-                <th>&nbsp; Age &nbsp;</th>
-                <th>&nbsp; Address &nbsp;</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>&nbsp; Gender &nbsp;</th>
-                <th>&nbsp; Enrollment Date &nbsp;</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStudents.sort((a, b) => a.id - b.id).map((student) => (
-                <tr key={student.id}>
-                  <td>{student.id}</td>
-                  <td>{student.name}</td>
-                  <td>{student.course}</td>
-                  <td>{student.age}</td>
-                  <td>{student.address}</td>
-                  <td>{student.email}</td>
-                  <td>{student.phone}</td>
-                  <td>{student.gender}</td>
-                  <td>{student.enrollmentDate}</td>
-                  <td>
-                    &nbsp; <button onClick={() => handleEdit(student)}>Edit</button> &nbsp;
-                    <button onClick={() => handleDelete(student.id)}>Delete</button> &nbsp;
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Data Visualization Charts */}
-          <div className="data-visualization-container"> 
-            <div className="course-chart-container">
-              <h2> Course Distribution </h2>
-              <ResponsiveContainer width="100%" height={400}>
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    dataKey="count"
-                    nameKey="course"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={150}
-                    fill="#8884d8"
-                    label
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="gender-chart-container">
-              <h2> Gender Distribution </h2>
-              <ResponsiveContainer width ="100%" height={400}>
-                <BarChart data={addressChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="address" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
         </>
       ) : (
-        <Login setToken={setToken} />
+        <Login setToken={setToken} authenticateUser={authenticateUser}/>
       )}
       <ToastContainer />
     </div>

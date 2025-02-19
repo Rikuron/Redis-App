@@ -38,7 +38,8 @@ const authenticateUser = (req, res) => {
       return res.status(500).json({ message: 'Internal server error' });
     }
     const token = jwt.sign({ username: user.username, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token });
+    res.json({ token, username: user.username, role: user.role });
+
   } else {
     console.error('Invalid login attempt:', { username, password });
     res.status(401).json({ message: 'Invalid credentials' });
@@ -153,6 +154,58 @@ app.delete('/students/:id', authorize(['Admin']), async (req, res) => {
 
 // Login route
 app.post('/login', authenticateUser);
+
+// CSV Import route
+app.post('/students/import', authorize(['Admin']), async (req, res) => {
+  const students = req.body;
+  
+  // Validate CSV structure
+  if (!Array.isArray(students)) {
+    return res.status(400).json({ message: 'Invalid CSV data format' });
+  }
+
+  try {
+    // Validate each student record
+    for (const student of students) {
+      if (!student.id || !student.name || !student.course || 
+          !student.age || !student.address || !student.email || 
+          !student.phone || !student.gender || !student.enrollmentDate) {
+        return res.status(400).json({ message: 'Missing required fields in CSV data' });
+      }
+
+      // Validate data types
+      if (typeof student.name !== 'string' ||
+          typeof student.course !== 'string' ||
+          typeof student.address !== 'string' ||
+          typeof student.email !== 'string' ||
+          typeof student.phone !== 'string' ||
+          typeof student.gender !== 'string' ||
+          isNaN(Number(student.age)) ||
+          isNaN(Date.parse(student.enrollmentDate))) {
+        return res.status(400).json({ message: 'Invalid data types in CSV' });
+      }
+    }
+
+    // Save all valid students to Redis
+    await Promise.all(students.map(async (student) => {
+      await client.hSet(`student:${student.id}`, 'name', student.name);
+      await client.hSet(`student:${student.id}`, 'course', student.course);
+      await client.hSet(`student:${student.id}`, 'age', student.age);
+      await client.hSet(`student:${student.id}`, 'address', student.address);
+      await client.hSet(`student:${student.id}`, 'email', student.email);
+      await client.hSet(`student:${student.id}`, 'phone', student.phone);
+      await client.hSet(`student:${student.id}`, 'gender', student.gender);
+      await client.hSet(`student:${student.id}`, 'enrollmentDate', student.enrollmentDate);
+
+    }));
+
+    res.status(201).json({ message: 'CSV data imported successfully' });
+  } catch (error) {
+    console.error('Error importing CSV:', error);
+    res.status(500).json({ message: 'Failed to import CSV data' });
+  }
+});
+
 
 // Start server
 app.listen(PORT, () => {

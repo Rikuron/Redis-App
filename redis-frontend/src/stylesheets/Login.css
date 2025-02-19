@@ -51,10 +51,10 @@
 }
 
 h2 {
-  font-size: 20px;
+  font-size: 1.5rem;
   font-weight: bold;
   color: #222;
-  margin-bottom: 10px;
+  margin-bottom: 30px;
   margin-left: 8px;
 }
 
@@ -68,7 +68,7 @@ p {
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 1.25rem;
 }
 
 .login-input {
@@ -85,41 +85,29 @@ p {
 #button-container {
   display: flex;
   justify-content: space-between;
-  margin-top: 9px;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 1.25rem;
   gap: 1rem;
+  width: 100%;
 }
 
-.login-button,
-.register-button {
+.login-button {
   padding: 12px;
   border-radius: 8px;
   font-size: 16px;
   font-weight: bold;
   border: none;
   cursor: pointer;
-  width: 48%;
+  width: 91%;
   transition: background-color 0.3s, transform 0.3s; /* Transition for hover effect */
-}
-
-.login-button {
   background: #ff4d75;
   color: white;
 }
 
-.register-button {
-  background: white;
-  color: #ff4d75;
-  border: 2px solid #ff4d75;
-}
-
 .login-button:hover {
   background: #e63b63;
-  transform: translateY(-2px); /* Lift effect */
-}
-
-.register-button:hover {
-  background: #ffecf1;
-  transform: translateY(-2px); /* Lift effect */
+  transform: translateY(-4px); /* Lift effect */
 }
 
 

@@ -107,29 +107,49 @@ function App() {
     .sort((a, b) => a.id - b.id); // Sort by ID in ascending order
 
   // Handle CSV import
-  const handleCSVImport = (data) => {
-    const importedStudents = data
-      .filter(row => row[0] && row[1] && row[2] && row[3] && row[4] && row[5] && row[6] && row[7])
-      .map((row, index) => ({
-        id: index + 1,
-        name: row[0],
-        course: row[1],
-        age: row[2],
-        address: row[3],
-        email: row[4],
-        phone: row[5],
-        gender: row[6],
-        enrollmentDate: row[7],
-      }));
-    setStudents(importedStudents);
+  const handleCSVImport = async (data) => {
+    try {
+      // Validate and transform CSV data
+      const importedStudents = data
+        .filter(row => row[0] && row[1] && row[2] && row[3] && row[4] && row[5] && row[6] && row[7])
+        .map((row, index) => {
+          // Convert date from DD/MM/YYYY to YYYY-MM-DD
+          const [day, month, year] = row[7].split('/');
+          const formattedDate = `${year}-${month}-${day}`;
+          
+          return {
+            id: index + 1,
+            name: row[0],
+            course: row[1],
+            age: row[2],
+            address: row[3],
+            email: row[4],
+            phone: row[5],
+            gender: row[6],
+            enrollmentDate: formattedDate,
+          };
+        });
+
+      // Send to backend
+      const response = await axios.post(`${API_URL}/import`, importedStudents, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success(response.data.message);
+      fetchStudents(); // Refresh student list
+    } catch (error) {
+      console.error('Error importing CSV:', error);
+      toast.error(error.response?.data?.message || 'Failed to import CSV');
+    }
   };
 
   const authenticateUser = async (username, password) => {
     try {
       const response = await axios.post('http://localhost:5000/login', { username, password });
       setToken(response.data.token);
-      setUsername(username); // Store the username in the state
+      setUsername(response.data.username); // Use username from response
       setRole(response.data.role);
+
     } catch (error) {
       toast.error('Invalid credentials');
       console.error('Invalid credentials:', error);
@@ -169,7 +189,6 @@ function App() {
 
   return (
     <div>
-
       {token ? (
         <>
           {loading ? (
@@ -177,7 +196,6 @@ function App() {
           ) : (
             <>
               <div id="app-container">
-                
                 <div id="header-container">
                   <div id="app-title-container">
                     <img src={toga} alt="toga icon" id="toga-icon" />
@@ -192,41 +210,42 @@ function App() {
                 </div>
 
                 <div id="overall-body-container">
-                  <div id="add-student-container">
-                    <p> Student Information </p>
+                  {role === 'Admin' && (
+                    <div id="add-student-container">
+                      <p> Student Information </p>
 
-                    {!isEditing ? (
-                      <form onSubmit={handleAddSubmit}>
-                        <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required />
-                        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required /> 
-                        <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required /> 
-                        <input type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} required  /> 
-                        <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required  />
-                        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required /> 
-                        <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required /> 
-                        <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required /> 
-                        <input type="date" name="enrollmentDate" placeholder="Enrollment Date" value={formData.enrollmentDate} onChange={handleChange} required /> 
-                        <button className="submit-button" type="submit">Add Student</button>
-                      </form>
-                    ) : (
-                      <form onSubmit={handleEditSubmit}>
-                        <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required disabled /> 
-                        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required /> 
-                        <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required /> 
-                        <input type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} required /> 
-                        <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
-                        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required /> 
-                        <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required /> 
-                        <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required /> 
-                        <input type="date" name="enrollmentDate" placeholder="Enrollment Date" value={formData.enrollmentDate} onChange={handleChange} required /> 
-                        <button className="submit-button" type="submit">Update Student</button>
-                      </form>
-                    )}
-                  </div>
+                      {!isEditing ? (
+                        <form onSubmit={handleAddSubmit}>
+                          <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required />
+                          <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required /> 
+                          <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required /> 
+                          <input type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} required  /> 
+                          <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required  />
+                          <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required /> 
+                          <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required /> 
+                          <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required /> 
+                          <input type="date" name="enrollmentDate" placeholder="Enrollment Date" value={formData.enrollmentDate} onChange={handleChange} required /> 
+                          <button className="submit-button" type="submit">Add Student</button>
+                        </form>
+                      ) : (
+                        <form onSubmit={handleEditSubmit}>
+                          <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required disabled /> 
+                          <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required /> 
+                          <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required /> 
+                          <input type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} required /> 
+                          <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
+                          <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required /> 
+                          <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} required /> 
+                          <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required /> 
+                          <input type="date" name="enrollmentDate" placeholder="Enrollment Date" value={formData.enrollmentDate} onChange={handleChange} required /> 
+                          <button className="submit-button" type="submit">Update Student</button>
+                        </form>
+                      )}
+                    </div>  
+                  )}
 
-                  <div id="main-body-container">
+                  <div id="main-body-container" className={role === 'Viewer' ? 'full-width' : ''}>
                     <div id="navigator-container">
-
                       <div id="search-container">
                         <input 
                           type="text"
@@ -245,15 +264,20 @@ function App() {
                       </div>
 
                       <div id="navigator-right-side-container">
-                        <label htmlFor="csvInput" className="import-csv-button">
-                          Import Students
-                        </label>
-                        <CSVReader
-                          cssClass="csv-reader-input"
-                          onFileLoaded={handleCSVImport}
-                          inputId="csvInput"
-                          inputStyle={{ display: 'none' }} // Hide default input
-                        />
+                        {role === 'Admin' && (
+                          <>
+                            <label htmlFor="csvInput" className="import-csv-button">
+                              Import Students
+                            </label>
+                            <CSVReader
+                              cssClass="csv-reader-input"
+                              onFileLoaded={handleCSVImport}
+                              inputId="csvInput"
+                              inputStyle={{ display: 'none' }} // Hide default input
+                            />
+                          </>
+                        )}
+
                         <p> Total Students: <span>{students.length}</span> </p>
                       </div>
                     </div>
@@ -288,8 +312,10 @@ function App() {
                               <td>{student.enrollmentDate}</td>
                               {role === 'Admin' && (
                                 <td>
-                                  &nbsp; <button onClick={() => handleEdit(student)}>Edit</button> &nbsp;
-                                  <button onClick={() => handleDelete(student.id)}>Delete</button> &nbsp;
+                                  <div id="admin-buttons-container">
+                                    <button id="edit-button" onClick={() => handleEdit(student)} /> 
+                                    <button id="delete-button" onClick={() => handleDelete(student.id)} /> 
+                                  </div>
                                 </td>
                               )}
                             </tr>
@@ -344,7 +370,7 @@ function App() {
           )}
         </>
       ) : (
-        <Login setToken={setToken} authenticateUser={authenticateUser}/>
+        <Login setToken={setToken} setRole={setRole} setUsername={setUsername} authenticateUser={authenticateUser}/>
       )}
       <ToastContainer />
     </div>

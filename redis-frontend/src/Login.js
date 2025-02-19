@@ -26,25 +26,32 @@ const Login = ({ setToken, setUsername, setRole }) => {
         <img src={toga} alt="toga logo" width="50" height="50" />
         <h1> Student Record System </h1>
       </div>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsernameInput(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
+      <div className="login-container">
+        <h2> Log in to see records </h2>
+        <form onSubmit={handleSubmit} className="login-form">
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={username}
+            className="login-input"
+            onChange={(e) => setUsernameInput(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={password}
+            className="login-input"
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <div id="button-container">
+            <button type="submit" className="login-button">Login</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

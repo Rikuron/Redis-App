@@ -57,31 +57,21 @@
 #user-container {
   display: flex;
   align-items: center;
+  margin-right: 2rem;
 }
 
 #user-container img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 32px;
+  height: auto;
+  border-radius: 0;
   margin-right: 10px;
 }
 
-#user-container {
-  margin-right: 2rem;
-  display: flex;
-  align-items: center;
-}
-
-#user-container img {
-  border-radius: 0;
-  width: 32px;
-  height: auto;
-}
-
 #user-container #username {
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: #f6f6f6;
-  margin-left: -5px;
+  margin-left: 10px;
+  font-weight: bold;
 }
 
 #user-container #logout-button {
@@ -164,12 +154,22 @@
   transform: translateY(-2px); /* Lift effect */
 }
 
+#add-student-container.hidden {
+  display: none;
+}
+
 #main-body-container {
   display: block;
-  width: 78%;
   height: 100vh;
   z-index: 1;
   margin-left: 22.3%;
+  width: 78%;
+  transition: all 0.3s ease;
+}
+
+#main-body-container.full-width {
+  width: 100%;
+  margin-left: 0;
 }
 
 #navigator-container {
@@ -261,6 +261,7 @@
   font-size: 0.9rem;
   text-align: left;
   background-color: white;
+  width: 100%;
 }
 
 .student-table th {
@@ -273,6 +274,8 @@
 .student-table td {
   border: 1px solid #ddd;
   padding: 10px;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .student-table tbody tr {
@@ -290,6 +293,50 @@
 .student-table td {
   text-align: center;
 }
+
+.student-table #admin-buttons-container {
+  display: flex;
+  gap: 5px;
+  padding-bottom: 5px;
+}
+
+.student-table #edit-button {
+  background-image: url('../images/editing.png');
+  background-color: transparent;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  margin: 0 5px;
+  transition: opacity 0.2s ease;
+}
+
+.student-table #edit-button:hover {
+  opacity: 0.8;
+}
+
+
+.student-table #delete-button {
+  background-image: url('../images/bin.png');
+  background-color: transparent;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  margin: 0 5px;
+  transition: opacity 0.2s ease;
+}
+
+.student-table #delete-button:hover {
+  opacity: 0.8;
+}
+
 
 .data-visualization-container {
   display: flex;

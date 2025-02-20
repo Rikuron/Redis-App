@@ -3,6 +3,8 @@ const redis = require('redis');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
 require('dotenv').config();
 
 const app = express();
@@ -21,30 +23,76 @@ client.connect()
   .then(() => console.log('Connected to Redis'))
   .catch(err => console.error('Redis connection error:', err));
 
-// Simple user model for demonstration
-const users = [
-  { username: 'admin', password: 'admin123', role: 'Admin' },
-  { username: 'viewer', password: 'viewer123', role: 'Viewer' }
-];
+// Admin key from environment variables
+const ADMIN_KEY = process.env.ADMIN_KEY || 'eugenio<3';
+
+// User registration endpoint
+app.post('/register', async (req, res) => {
+  const { username, password, adminKey } = req.body;
+
+  // Validate input
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+
+  try {
+    // Check if user already exists
+    const existingUser = await client.hGet('users', username);
+    if (existingUser) {
+      return res.status(400).json({ message: 'Username already exists' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Determine role based on admin key
+    const role = (adminKey === ADMIN_KEY) ? 'Admin' : 'Viewer';
+
+    // Store user in Redis
+    await client.hSet('users', username, JSON.stringify({
+      username,
+      password: hashedPassword,
+      role
+    }));
+
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Registration failed' });
+  }
+});
+
 
 // Middleware to authenticate user
-const authenticateUser = (req, res) => {
+const authenticateUser = async (req, res) => {
   const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
   
-  if (user) {
+  try {
+    const userData = await client.hGet('users', username);
+    if (!userData) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const user = JSON.parse(userData);
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
     if (!process.env.JWT_SECRET) {
       console.error('JWT_SECRET is not defined');
       return res.status(500).json({ message: 'Internal server error' });
     }
+    
     const token = jwt.sign({ username: user.username, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ token, username: user.username, role: user.role });
-
-  } else {
-    console.error('Invalid login attempt:', { username, password });
-    res.status(401).json({ message: 'Invalid credentials' });
+  } catch (error) {
+    console.error('Authentication error:', error);
+    res.status(500).json({ message: 'Authentication failed' });
   }
 };
+
 
 // Middleware to check user roles
 const authorize = (roles = []) => {

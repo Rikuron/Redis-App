@@ -48,7 +48,13 @@
   z-index: 1;
   position: relative;
   box-shadow: 12px 10px 0px 2px #ff4d75;
+  transition: height 0.3s ease;
 }
+
+.login-container.registering {
+  height: 22rem;
+}
+
 
 h2 {
   font-size: 1.5rem;
@@ -72,7 +78,7 @@ p {
 }
 
 .login-input {
-  width: 91%;
+  width: 93%;
   padding: 12px;
   border-radius: 8px;
   border: none;
@@ -80,29 +86,59 @@ p {
   font-size: 16px;
   color: #333;
   outline: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
+
+.login-input.admin-key {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.login-input.admin-key.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 
 #button-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-direction: column;
   margin-top: 1.25rem;
   gap: 1rem;
   width: 100%;
+  transition: transform 1.5s ease;
 }
 
+.login-container.registering #button-container {
+  transform: translateY(20px);
+}
+
+
 .login-button {
-  padding: 12px;
+  padding: 14px;
   border-radius: 8px;
   font-size: 16px;
   font-weight: bold;
   border: none;
   cursor: pointer;
-  width: 91%;
+  width: 41%;
   transition: background-color 0.3s, transform 0.3s; /* Transition for hover effect */
   background: #ff4d75;
   color: white;
+}
+
+.register-button {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  border-color: #e63b63;
+  cursor: pointer;
+  width: 40%;
+  transition: background-color 0.3s, transform 0.3s; /* Transition for hover effect */
+  background: #f6f6f6;
+  color: #ff4d75;
 }
 
 .login-button:hover {
@@ -110,7 +146,11 @@ p {
   transform: translateY(-4px); /* Lift effect */
 }
 
-
+.register-button:hover {
+  background: #e2e1e1;
+  color: #ff1c4d;
+  transform: translateY(-4px);
+}
 
 /* Custom Fonts */
 
